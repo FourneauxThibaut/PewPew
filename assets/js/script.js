@@ -1,76 +1,75 @@
 var targets = []; //hold all the targets
 let canvas = document.getElementById("mon_canvas");
 let ctx = canvas.getContext("2d");
-var mouse = {
+let backgroundPos = -2500;
+let mouse = {
     x: undefined, 
     y:undefined
 };
+
 canvas.onmousemove = function(event) { 
     mouse.x = event.x - this.offsetLeft; 
     mouse.y = event.y - this.offsetTop;
+    console.log(mouse.x);
 }
+function createAsteroid(){
 
-function createSquare(){
-    height = 30;
-    width = 30;
+    let asteroid1 = document.getElementById('asteroid1');
+    let asteroid2 = document.getElementById('asteroid2');
+    let asteroids = [ asteroid1, asteroid2 ];
+    let randomAsteroid = asteroids[Math.floor(Math.random() * asteroids.length)];
     let posX = Math.floor(Math.random() * 770) + 1;
-    let posY = Math.floor(Math.random() * 370) + 1;
-    target = [ posX, posY ];
-
-    ctx.rect( posX, posY, width, height);
-    ctx.fill();
-
+    target = [ posX, -15 ];
     targets.push(target)
+
+    ctx.drawImage(randomAsteroid, posX, 1, randomAsteroid.width * 1.6, randomAsteroid.height * 1.6);
 }
 
-function generateSquare(nbr){
+function generateAsteroid(nbr){
 
     for ( let i = 0; i < nbr; i++)
     {
-        createSquare();
+        createAsteroid();
     }
 }
 
-function createWeapon(){
-    
-    // ctx.beginPath();
-    // ctx.moveTo(290, 460);
-    // ctx.lineTo(290, 500);
-    // ctx.lineTo(330, 500);
-    // ctx.lineTo(330, 460);
-    // ctx.closePath();
-    // ctx.fillStyle = "blue";
-    // ctx.fill();
-
-    // ctx.beginPath();
-    // ctx.moveTo(305, 445);
-    // ctx.lineTo(305, 460);
-    // ctx.lineTo(315, 460);
-    // ctx.lineTo(315, 445);
-    // ctx.closePath();
-    // ctx.fillStyle = "blue";
-    // ctx.fill();
-
+function createShip(){
         
-    ctx.beginPath();
-    ctx.lineCap = "round";
-    ctx.moveTo(290, 460);
-    ctx.lineTo(290, 500);
-    ctx.lineTo(330, 500);
-    ctx.lineTo(330, 460);
-    ctx.lineTo(315, 465);
-    ctx.lineTo(315, 445);
-    ctx.lineTo(305, 445);
-    ctx.lineTo(305, 465);
-    ctx.closePath();
-    ctx.fillStyle = "darkorange";
-    ctx.fill();
-
+    let spaceship = document.getElementById('spaceship');
+    let flame1 = document.getElementById('flame1');
+    ctx.drawImage(flame1, 300, 420, spaceship.width / 4, spaceship.height / 4);
+    ctx.drawImage(spaceship, 300, 380, spaceship.width / 4, spaceship.height / 4);
 }
 
+function createBullet(){
 
-generateSquare(5);
-createWeapon();
+    let bullet = document.getElementById('laserSmall');
+    ctx.drawImage(bullet, 20, 50, bullet.width / 1.8, bullet.height / 1.8);
+}
+
+function createBackground(){
+
+    let background = document.getElementById('background');
+    ctx.drawImage(background, 0, backgroundPos);
+}
+
+function scrollBackground(){
+    background.requestAnimationFrame(scrollBackground); 
+    ctx.clearRect(0,0,canvas.width,canvas.height); 
+    backgroundPos+=2;
+}
+
+window.onload = () =>{
+    
+    let bullet = document.getElementById('laserSmall');
+    ctx.drawImage(bullet, 20, 50, bullet.width / 1.8, bullet.height / 1.8);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    createBackground();
+    generateAsteroid(4);
+    createShip();
+    createBullet();
+}
 
 ctx.stroke();
 console.log(targets);
