@@ -25,13 +25,12 @@ canvas.onmousemove = function(event) {
 }
 
 let gameBackground = new sprites('background', 0, -3000)
-function scrollBackground(gameBackground){
-    let ctx = canvas.getContext("2d");
+function scrollBackground(){
     if (gameBackground.posY > 0){
         gameBackground.posY = -3000;
     }
     gameBackground.posY += 2;
-    ctx.drawImage(this.image, this.posX, this.posY);
+    gameBackground.draw();
     console.log(gameBackground, gameBackground.posX, gameBackground.posY); 
     console.log(gameBackground);
 
@@ -48,7 +47,7 @@ window.onload = () =>{
     // let gameBackground = new sprites('background', 0, -3000);
     ctx.drawImage(gameBackground.image, gameBackground.posX, gameBackground.posY);
 
-    setInterval(scrollBackground(gameBackground), 3000);
+    setInterval(scrollBackground(), 3000);
 
     // setInterval(scrollBackground(gameBackground), 3000);
                             
