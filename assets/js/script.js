@@ -25,13 +25,18 @@ class Player extends Sprites {
         ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 4, this.image.height / 4);
     }
 }
+class Bullets extends Sprites {
+    draw() {
+        ctx.drawImage(this.image, mouse.x-( vaisseau.image.width / 14 ), this.posY, this.image.width / 1.8, this.image.height / 1.8);
+    }
+}
 /**================================================================================================
  *                                          Global Object
  *================================================================================================**/
 let gameBackground = new Sprites('background', 0, -3000);
 let vaisseau = new Player('spaceship', 300, 380);
 let flame = new Player('flame1', vaisseau.posX, vaisseau.posY+35);
-let bullet = new Sprites('laserSmall', vaisseau.posX+30, vaisseau.posY-25);
+let bullet = new Bullets('laserSmall', vaisseau.posX+30, vaisseau.posY-25);
 
 function updateScreen(){
     gameBackground.draw();
@@ -58,8 +63,6 @@ window.onload = () =>{
     setInterval(scrollBackground(), 1);
     moveFlame();
 
-    ctx.drawImage(vaisseau.image, vaisseau.posX, vaisseau.posY, vaisseau.image.width / 4, vaisseau.image.height / 4);
-    ctx.drawImage(flame.image, flame.posX, flame.posY, vaisseau.image.width / 4, vaisseau.image.height / 4);
 }
 
 
@@ -74,7 +77,8 @@ canvas.onmousemove = function(event) {
     flame.draw();
 
     canvas.onclick = function(event) { 
-        ctx.drawImage(bullet.image, mouse.x-( vaisseau.image.width / 14 ), bullet.posY, bullet.image.width / 1.8, bullet.image.height / 1.8);
+        updateScreen();
+        bullet.draw();
     }
 }
 
