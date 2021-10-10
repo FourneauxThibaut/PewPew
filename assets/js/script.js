@@ -40,9 +40,9 @@ class Background extends Sprites {
     }
     update() {
         if (this.posY > 0){
-            gameBackground.posY = -3000;
+            gameBackground.posY = -4000;
         }
-        this.posY += 0.6;
+        this.posY += 1;
     }
 }
 class Bullet extends Sprites {
@@ -51,20 +51,21 @@ class Bullet extends Sprites {
     }
     draw() {
         if (this.alive){
-            if ( this.image.id == "laser" ){
-                ctx.drawImage(this.image, this.posX-7, this.posY, this.image.width / 1.8, this.image.height / 1.8);
-            }
-            else if ( this.image.id == "laserSmall"){
-                ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
-            }
+            // if ( this.image.id == "laser" ){
+            //     ctx.drawImage(this.image, this.posX-7, this.posY, this.image.width / 1.8, this.image.height / 1.8);
+            // }
+            // else if ( this.image.id == "laserSmall"){
+            //     ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
+            // }
+            ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
         }
     }
     update() {
         if (this.alive){
-            if ( this.posY <= 300 )
+/*             if ( this.posY <= 300 )
             {
                 this.image = document.getElementById('laser');
-            }
+            } */
             // update the x value only if the object is alive
             this.posY -= 5;
             // Check if the bullet is on screen
@@ -78,7 +79,7 @@ class Bullet extends Sprites {
 /**================================================================================================
  **                                      Sprites & Obj
  *================================================================================================**/
-    let gameBackground = new Background('background', 0, -3000);
+    let gameBackground = new Background('background', 0, -4000);
     let vaisseau = new Player('spaceship', 300, 380);
     let flame = new Player('flame1', vaisseau.posX, vaisseau.posY+35);
     let bullets = [];
