@@ -34,6 +34,11 @@ class Player extends Sprites {
         ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 4, this.image.height / 4);
     }
 }
+class Pointer extends Sprites {
+    draw() {
+        ctx.drawImage(this.image, mouse.x-34, mouse.y);
+    }
+}
 class Background extends Sprites {
     draw() {
         ctx.drawImage(this.image, this.posX, this.posY);
@@ -42,7 +47,7 @@ class Background extends Sprites {
         if (this.posY > 0){
             gameBackground.posY = -4000;
         }
-        this.posY += 1;
+        this.posY += 0.7;
     }
 }
 class Bullet extends Sprites {
@@ -82,6 +87,7 @@ class Bullet extends Sprites {
     let gameBackground = new Background('background', 0, -4000);
     let vaisseau = new Player('spaceship', 300, 380);
     let flame = new Player('flame1', vaisseau.posX, vaisseau.posY+35);
+    let crosshair = new Pointer('crosshair', mouse.x, mouse.y);
     let bullets = [];
  
 /**================================================================================================
@@ -154,6 +160,7 @@ function render() {
   }
   vaisseau.draw();
   flame.draw();
+  crosshair.draw();
 }
 
 /**================================================================================================
