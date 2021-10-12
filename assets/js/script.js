@@ -9,7 +9,7 @@ let gameOver = false;
 let count = 0;
 let mouse = {
     x: undefined, 
-    y:undefined
+    y: undefined
 };
 /**================================================================================================
  **                                         Classes
@@ -36,7 +36,7 @@ class Player extends Sprites {
 }
 class Pointer extends Sprites {
     draw() {
-        ctx.drawImage(this.image, mouse.x-34, mouse.y);
+        ctx.drawImage(this.image, mouse.x-34, mouse.y-33.5);
     }
 }
 class Background extends Sprites {
@@ -56,25 +56,35 @@ class Bullet extends Sprites {
     }
     draw() {
         if (this.alive){
-            // if ( this.image.id == "laser" ){
-            //     ctx.drawImage(this.image, this.posX-7, this.posY, this.image.width / 1.8, this.image.height / 1.8);
-            // }
-            // else if ( this.image.id == "laserSmall"){
-            //     ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
-            // }
             ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
         }
     }
     update() {
         if (this.alive){
-/*             if ( this.posY <= 300 )
-            {
-                this.image = document.getElementById('laser');
-            } */
             // update the x value only if the object is alive
             this.posY -= 5;
             // Check if the bullet is on screen
             if (this.posY <= -100) {
+                this.alive = false;
+            }
+        }
+    }
+}
+class Asteroid extends Sprites {
+    init() {
+        ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
+    }
+    draw() {
+        if (this.alive){
+            ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
+        }
+    }
+    update() {
+        if (this.alive){
+            // update the x value only if the object is alive
+            this.posY += 1;
+            // Check if the bullet is on screen
+            if (this.posY >= 600) {
                 this.alive = false;
             }
         }
@@ -88,7 +98,9 @@ class Bullet extends Sprites {
     let vaisseau = new Player('spaceship', 300, 380);
     let flame = new Player('flame1', vaisseau.posX, vaisseau.posY+35);
     let crosshair = new Pointer('crosshair', mouse.x, mouse.y);
+    let asteroidsSprites = ['asteroid1', 'asteroid2', 'asteroid3', 'asteroid4', 'asteroid5'];
     let bullets = [];
+    let asteroids = [];
  
 /**================================================================================================
  **                                      CreateBullet
@@ -102,8 +114,44 @@ function createBullet() {
 }
 
 /**================================================================================================
- **                                      Move Flame
- *?  Flame animation with 2 image 
+ **                                      CreateExplosion
+ *?  trigger explosion on colision
+ *
+ *================================================================================================**/
+function createExplosion() {
+    explosion = new Player('explosion', 400, 250);
+    explosion.draw();
+}
+
+/**================================================================================================
+ **                                      CreateAsteroid
+ *
+ *?  initialise Asteroid on random position with random sprite
+ *
+ *================================================================================================**/
+ function createAsteroid() {
+    let randomAsteroidSprite = asteroidsSprites[Math.floor(Math.random()*asteroidsSprites.length)];
+    asteroid = new Asteroid(randomAsteroidSprite, Math.floor(Math.random() * 801) + 1, -100);
+    asteroids.push(asteroid);
+    asteroid.init();
+}
+
+/**================================================================================================
+ **                                      GenerateAsteroid
+ *
+ *?  create x Asteroid
+ *@argument numb
+ *================================================================================================**/
+ function generateAsteroid(numb) {
+    for (let i = 0; i < numb; i++){
+        createAsteroid();
+    }
+}
+
+/**================================================================================================
+ **                                      Async function
+ *?  animating the flame
+ *?  asteroid creation
  *
  *================================================================================================**/
 function sleep(ms) {
@@ -114,7 +162,8 @@ async function moveFlame(){
     {
         flame.image = document.getElementById('flame2');
         await sleep(80);
-        if ( !gameOver ){
+        if ( !gameOver )
+        {
             requestAnimationFrame(moveFlame);
         }
     }
@@ -122,13 +171,22 @@ async function moveFlame(){
     {
         flame.image = document.getElementById('flame1');
         await sleep(700);
-        if ( !gameOver ){
+        if ( !gameOver )
+        {
             requestAnimationFrame(moveFlame);
         }
     }
     count++;
 }
-
+async function spawnTargets(){
+    setInterval( () => generateAsteroid(1), 20000);
+    await sleep(20000);
+    if ( !gameOver )
+    {
+        requestAnimationFrame(spawnTargets);
+    }
+}
+    
 /**================================================================================================
  **                                         UpdateScreen
  *?  update all sprites in the list
@@ -142,6 +200,10 @@ function updateScreen() {
         {
             bullets[i].update();
         }
+        for (let j = asteroids.length; j--;) 
+        {
+            asteroids[j].update();
+        }
         moveFlame();
     }
 }
@@ -152,15 +214,25 @@ function updateScreen() {
  *
  *================================================================================================**/
 function render() {
-  // Here we render all the sprites after clearing the screen
-  ctx.clearRect(0, 0, width, height);
-  gameBackground.draw();
-  for (let j = 0; j < bullets.length; j++) {
-    bullets[j].draw();
-  }
-  vaisseau.draw();
-  flame.draw();
-  crosshair.draw();
+    // Here we render all the sprites after clearing the screen
+    ctx.clearRect(0, 0, width, height);
+    // Drawing the background
+    gameBackground.draw();
+    // Drawing the asteroids
+    spawnTargets();
+    for (let j = 0; j < asteroids.length; j++) {
+        asteroids[j].draw();
+    }
+    // Drawing the bullets
+    for (let i = 0; i < bullets.length; i++) {
+        bullets[i].draw();
+    }
+    // Drawing the spaceship
+    vaisseau.draw();
+    // Drawing the spoaceship reactor
+    flame.draw();
+    // Drawing the crosshair
+    crosshair.draw();
 }
 
 /**================================================================================================
@@ -175,7 +247,7 @@ canvas.onmousemove = function(event) {
     mouse.x = event.x - this.offsetLeft; 
     mouse.y = event.y - this.offsetTop;
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ctx.clearRect(0, 0, canvas.width, canvas.height);
     vaisseau.posX = mouse.x-( ( vaisseau.image.width / 4 ) / 2 ) - 2;
     flame.posX = mouse.x-( ( vaisseau.image.width / 4 ) / 2 ) - 2;
 }
