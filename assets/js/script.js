@@ -23,6 +23,8 @@ class Sprites {
         this.image = document.getElementById(image);
         this.posX = posX;
         this.posY = posY;
+        this.width = this.image.width;
+        this.height = this.image.height;
         this.alive = true;
     }
     draw(){
@@ -31,7 +33,7 @@ class Sprites {
 }
 class Player extends Sprites {
     draw() {
-        ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 4, this.image.height / 4);
+        ctx.drawImage(this.image, this.posX, this.posY, this.width / 4, this.height / 4);
     }
 }
 class Pointer extends Sprites {
@@ -52,11 +54,11 @@ class Background extends Sprites {
 }
 class Bullet extends Sprites {
     init() {
-        ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
+        ctx.drawImage(this.image, this.posX, this.posY, this.width / 1.8, this.height / 1.8);
     }
     draw() {
         if (this.alive){
-            ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
+            ctx.drawImage(this.image, this.posX, this.posY, this.width / 1.8, this.height / 1.8);
         }
     }
     update() {
@@ -72,11 +74,11 @@ class Bullet extends Sprites {
 }
 class Asteroid extends Sprites {
     init() {
-        ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
+        ctx.drawImage(this.image, this.posX, this.posY, this.width * 1.15, this.height * 1.15);
     }
     draw() {
         if (this.alive){
-            ctx.drawImage(this.image, this.posX, this.posY, this.image.width / 1.8, this.image.height / 1.8);
+            ctx.drawImage(this.image, this.posX, this.posY, this.width * 1.15, this.height * 1.15);
         }
     }
     update() {
@@ -99,8 +101,10 @@ class Asteroid extends Sprites {
     let flame = new Player('flame1', vaisseau.posX, vaisseau.posY+35);
     let crosshair = new Pointer('crosshair', mouse.x, mouse.y);
     let asteroidsSprites = ['asteroid1', 'asteroid2', 'asteroid3', 'asteroid4', 'asteroid5'];
+    let explosionAnimationSprites = ['explosion1', 'explosion2', 'explosion3', 'explosion4', 'explosion5', 'explosion6'];
     let bullets = [];
     let asteroids = [];
+    let explosions = [];
  
 /**================================================================================================
  **                                      CreateBullet
@@ -108,7 +112,7 @@ class Asteroid extends Sprites {
  *
  *================================================================================================**/
 function createBullet() {
-    bullet = new Bullet('laserSmall', mouse.x-36, 380);
+    let bullet = new Bullet('laserSmall', mouse.x-36, 380);
     bullets.push(bullet);
     bullet.init();
 }
@@ -117,10 +121,45 @@ function createBullet() {
  **                                      CreateExplosion
  *?  trigger explosion on colision
  *
+ * TODO THIS NEED TO BE REMAKE
  *================================================================================================**/
-function createExplosion() {
-    explosion = new Player('explosion', 400, 250);
-    explosion.draw();
+function createExplosion(x, y) {
+    explosion = new Asteroid(explosionAnimationSprites[0], x, y);
+    explosions.push(explosion);
+}
+
+/**================================================================================================
+ **                                      LookColision
+ *?  trigger explosion on colision
+ *
+ *================================================================================================**/
+function lookColision() {
+    bullets.forEach(bulletElem => {
+        asteroids.forEach(asteroidElem => {
+            // Check x and y for overlap
+            if (asteroidElem.posX > bulletElem.width + bulletElem.posX 
+                || bulletElem.posX > asteroidElem.width + asteroidElem.posX 
+                || asteroidElem.posY > bulletElem.height + bulletElem.posY 
+                || bulletElem.posY > asteroidElem.height + asteroidElem.posY)
+            {
+                return false;
+            }
+            else
+            {
+                // delete bullet
+                let bulletElemIndex = bullets.indexOf(bulletElem)
+                bullets.splice(bulletElemIndex, 1); 
+
+                // create explosion animation on the target place
+                createExplosion(asteroidElem.posX, asteroidElem.posY);
+
+                // delete target
+                let asteroidElemIndex = asteroids.indexOf(asteroidElem)
+                asteroids.splice(asteroidElemIndex, 1); 
+                
+            }
+        });
+    });
 }
 
 /**================================================================================================
@@ -131,7 +170,7 @@ function createExplosion() {
  *================================================================================================**/
  function createAsteroid() {
     let randomAsteroidSprite = asteroidsSprites[Math.floor(Math.random()*asteroidsSprites.length)];
-    asteroid = new Asteroid(randomAsteroidSprite, Math.floor(Math.random() * 801) + 1, -100);
+    asteroid = new Asteroid(randomAsteroidSprite, Math.floor(Math.random() * 770) + 1, -100);
     asteroids.push(asteroid);
     asteroid.init();
 }
@@ -148,6 +187,24 @@ function createExplosion() {
     }
 }
 
+/**================================================================================================
+ **                                 Delete death object
+ *
+ *?  delete objet.alive false
+ *
+ *================================================================================================**/
+ function deleteDeathObj() {
+    for(var i = 0; i < bullets.length; i++) {
+        if(bullets[i].alive == false) {
+            bullets.splice(i, 1);
+        }
+    }
+    for(var i = 0; i < asteroids.length; i++) {
+        if(asteroids[i].alive == false) {
+            asteroids.splice(i, 1);
+        }
+    }
+}
 /**================================================================================================
  **                                      Async function
  *?  animating the flame
@@ -179,8 +236,9 @@ async function moveFlame(){
     count++;
 }
 async function spawnTargets(){
-    setInterval( () => generateAsteroid(1), 20000);
-    await sleep(20000);
+    // setInterval( () => generateAsteroid(1), 20000);
+    generateAsteroid(Math.floor(Math.random() * 3));
+    await sleep(Math.floor(Math.random() * 2000) + 100);
     if ( !gameOver )
     {
         requestAnimationFrame(spawnTargets);
@@ -204,7 +262,13 @@ function updateScreen() {
         {
             asteroids[j].update();
         }
+        // for (let k = 0; k < explosions.length; k++) 
+        // {
+
+        //     explosions[k].image = document.getElementById('explosion'+(k+1))
+        // }
         moveFlame();
+        lookColision();
     }
 }
 
@@ -219,13 +283,16 @@ function render() {
     // Drawing the background
     gameBackground.draw();
     // Drawing the asteroids
-    spawnTargets();
-    for (let j = 0; j < asteroids.length; j++) {
-        asteroids[j].draw();
+    for (let i = 0; i < asteroids.length; i++) {
+        asteroids[i].draw();
+    }
+    // Drawing the explosions
+    for (let j = 0; j < explosions.length; j++) {
+        explosions[j].draw();
     }
     // Drawing the bullets
-    for (let i = 0; i < bullets.length; i++) {
-        bullets[i].draw();
+    for (let k = 0; k < bullets.length; k++) {
+        bullets[k].draw();
     }
     // Drawing the spaceship
     vaisseau.draw();
@@ -259,9 +326,14 @@ canvas.onmousemove = function(event) {
 function loop() {
   // Very simple and naive game loop
   updateScreen();
+  deleteDeathObj()
   render();
-  requestAnimationFrame(loop);
+  if ( !gameOver )
+    {
+        requestAnimationFrame(loop);
+    }
 }
 
 // Start the game
 requestAnimationFrame(loop);
+spawnTargets();
